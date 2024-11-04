@@ -59,7 +59,7 @@ class Variable(Protocol):
         """Returns the parents of this variable."""
         ...
 
-    def  chain_rule(self, d_output: Any) -> Iterable[Tuple[Variable, Any]]:
+    def chain_rule(self, d_output: Any) -> Iterable[Tuple[Variable, Any]]:
         """Computes the chain rule for backpropagation."""
         ...
 
