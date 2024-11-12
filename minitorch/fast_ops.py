@@ -336,8 +336,18 @@ def _tensor_matrix_multiply(
     a_batch_stride = a_strides[0] if a_shape[0] > 1 else 0
     b_batch_stride = b_strides[0] if b_shape[0] > 1 else 0
 
-    # TODO: Implement for Task 3.2.
-    raise NotImplementedError("Need to implement for Task 3.2")
+    for n in prange(out_shape[0]):
+        a_offset = n * a_batch_stride
+        b_offset = n * b_batch_stride
+        for i in range(a_shape[1]):
+            for j in range(b_shape[2]):
+                sum = 0.0
+                for k in range(a_shape[2]):
+                    a_idx = a_offset + i * a_strides[1] + k * a_strides[2]
+                    b_idx = b_offset + k * b_strides[1] + j * b_strides[2]
+                    sum += a_storage[a_idx] * b_storage[b_idx]
+                out_idx = n * out_strides[0] + i * out_strides[1] + j * out_strides[2]
+                out[out_idx] = sum
 
 
 tensor_matrix_multiply = njit(_tensor_matrix_multiply, parallel=True)
