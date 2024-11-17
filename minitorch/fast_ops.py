@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, TypeVar, Any
 
 from numba import njit as _njit
 from numba import prange
-import numpy as np #come back to this
+import numpy as np  # come back to this
 
 from .tensor_data import (
     Index,
@@ -31,6 +31,7 @@ Fn = TypeVar("Fn")
 
 
 def njit(fn: Fn, **kwargs: Any) -> Fn:
+    """Decorator to JIT compile functions with NUMBA."""
     return _njit(inline="always", **kwargs)(fn)  # type: ignore
 
 
@@ -172,7 +173,9 @@ def tensor_map(
         out_index = np.empty(MAX_DIMS, dtype=np.int32)
         in_index = np.empty(MAX_DIMS, dtype=np.int32)
 
-        if np.array_equal(out_strides, in_strides) and np.array_equal(out_shape, in_shape):
+        if np.array_equal(out_strides, in_strides) and np.array_equal(
+            out_shape, in_shape
+        ):
             for i in prange(len(out)):
                 out[i] = fn(in_storage[i])
         else:
@@ -181,7 +184,7 @@ def tensor_map(
                 broadcast_index(out_index, out_shape, in_shape, in_index)
                 o = index_to_position(out_index, out_strides)
                 a = index_to_position(in_index, in_strides)
-                out[o] = fn(in_storage[a])        
+                out[o] = fn(in_storage[a])
 
     return njit(_map, parallel=True)  # type: ignore
 
@@ -224,10 +227,12 @@ def tensor_zip(
         a_index: Index = np.empty(MAX_DIMS, np.int32)
         b_index: Index = np.empty(MAX_DIMS, np.int32)
 
-        if (np.array_equal(out_strides, a_strides) and
-            np.array_equal(out_strides, b_strides) and
-            np.array_equal(out_shape, a_shape) and
-            np.array_equal(out_shape, b_shape)):
+        if (
+            np.array_equal(out_strides, a_strides)
+            and np.array_equal(out_strides, b_strides)
+            and np.array_equal(out_shape, a_shape)
+            and np.array_equal(out_shape, b_shape)
+        ):
             for i in prange(len(out)):
                 out[i] = fn(a_storage[i], b_storage[i])
         else:

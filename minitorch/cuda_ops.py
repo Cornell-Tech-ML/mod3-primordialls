@@ -29,11 +29,13 @@ FakeCUDAKernel = Any
 Fn = TypeVar("Fn")
 
 
-def device_jit(fn: Fn, **kwargs) -> Fn:
+def device_jit(fn: Fn, **kwargs: Any) -> Fn:
+    """Decorator that enables just-in-time compilation for CUDA device functions."""
     return _jit(device=True, **kwargs)(fn)  # type: ignore
 
 
-def jit(fn, **kwargs) -> FakeCUDAKernel:
+def jit(fn: Fn, **kwargs: Any) -> FakeCUDAKernel:
+    """Decorator that enables just-in-time compilation for CUDA functions."""
     return _jit(**kwargs)(fn)  # type: ignore
 
 
@@ -67,6 +69,7 @@ class CudaOps(TensorOps):
 
     @staticmethod
     def zip(fn: Callable[[float, float], float]) -> Callable[[Tensor, Tensor], Tensor]:
+        """See `tensor_ops.py`"""
         cufn: Callable[[float, float], float] = device_jit(fn)
         f = tensor_zip(cufn)
 
@@ -86,6 +89,7 @@ class CudaOps(TensorOps):
     def reduce(
         fn: Callable[[float, float], float], start: float = 0.0
     ) -> Callable[[Tensor, int], Tensor]:
+        """See `tensor_ops.py`"""
         cufn: Callable[[float, float], float] = device_jit(fn)
         f = tensor_reduce(cufn)
 
@@ -106,6 +110,7 @@ class CudaOps(TensorOps):
 
     @staticmethod
     def matrix_multiply(a: Tensor, b: Tensor) -> Tensor:
+        """See `tensor_ops.py`"""
         # Make these always be a 3 dimensional multiply
         both_2d = 0
         if len(a.shape) == 2:
@@ -223,7 +228,7 @@ def tensor_zip(
 
         if i >= out_size:
             return
-            
+
         to_index(i, out_shape, out_index)
         broadcast_index(out_index, out_shape, a_shape, a_index)
         broadcast_index(out_index, out_shape, b_shape, b_index)
@@ -238,7 +243,7 @@ def tensor_zip(
 
 
 def _sum_practice(out: Storage, a: Storage, size: int) -> None:
-    """This is a practice sum kernel to prepare for reduce.
+    r"""Implements a practice sum kernel to prepare for reduce operations.
 
     Given an array of length $n$ and out of size $n // \text{blockDIM}$
     it should sum up each blockDim values into an out cell.
@@ -288,6 +293,17 @@ jit_sum_practice = cuda.jit()(_sum_practice)
 
 
 def sum_practice(a: Tensor) -> TensorData:
+    """Practice summing a tensor using CUDA operations.
+
+    Args:
+    ----
+        a (Tensor): Input tensor to sum.
+
+    Returns:
+    -------
+        TensorData: Resulting tensor data after summing.
+
+    """
     (size,) = a.shape
     threadsperblock = THREADS_PER_BLOCK
     blockspergrid = (size // THREADS_PER_BLOCK) + 1
@@ -296,6 +312,7 @@ def sum_practice(a: Tensor) -> TensorData:
     jit_sum_practice[blockspergrid, threadsperblock](
         out.tuple()[0], a._tensor._storage, size
     )
+
     return out
 
 
@@ -344,7 +361,7 @@ def tensor_reduce(
         # Calculate initial value at thread
         if pos < a_shape[reduce_dim]:
             cache[pos] = a_storage[
-            index_to_position(out_index, a_strides) + pos * a_strides[reduce_dim]
+                index_to_position(out_index, a_strides) + pos * a_strides[reduce_dim]
             ]
         else:
             cache[pos] = reduce_value
@@ -358,7 +375,7 @@ def tensor_reduce(
             cuda.syncthreads()
             stride //= 2
 
-        # Write back to global memory 
+        # Write back to global memory
         if pos == 0:
             out[final_out_pos] = cache[0]
 
@@ -366,7 +383,7 @@ def tensor_reduce(
 
 
 def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
-    """This is a practice square MM kernel to prepare for matmul.
+    """Practice square MM kernel to prepare for matmul.
 
     Given a storage `out` and two storage `a` and `b`. Where we know
     both are shape [size, size] with strides [size, 1].
@@ -422,6 +439,18 @@ jit_mm_practice = jit(_mm_practice)
 
 
 def mm_practice(a: Tensor, b: Tensor) -> TensorData:
+    """Practice matrix multiplication kernel to prepare for matmul operations.
+
+    Args:
+    ----
+        a (Tensor): First input tensor for multiplication
+        b (Tensor): Second input tensor for multiplication
+
+    Returns:
+    -------
+        TensorData: Result of the matrix multiplication
+
+    """
     (size, _) = a.shape
     threadsperblock = (THREADS_PER_BLOCK, THREADS_PER_BLOCK)
     blockspergrid = 1
@@ -518,5 +547,6 @@ def _tensor_matrix_multiply(
 
         # Write final result to global memory
         out[batch * out_strides[0] + i * out_strides[1] + j * out_strides[2]] = acc
+
 
 tensor_matrix_multiply = jit(_tensor_matrix_multiply)
