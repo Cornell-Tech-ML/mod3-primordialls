@@ -519,22 +519,20 @@ def _tensor_matrix_multiply(
     # Loop over the k dimension by BLOCK_DIM chunks
     for k_start in range(0, a_shape[-1], BLOCK_DIM):
         # Load data into shared memory
-        if (i < out_shape[-2] and 
-            (k_start + pj) < a_shape[-1]):
+        if i < out_shape[-2] and (k_start + pj) < a_shape[-1]:
             a_shared[pi, pj] = a_storage[
-                batch * a_batch_stride + 
-                i * a_strides[-2] + 
-                (k_start + pj) * a_strides[-1]
+                batch * a_batch_stride
+                + i * a_strides[-2]
+                + (k_start + pj) * a_strides[-1]
             ]
         else:
             a_shared[pi, pj] = 0.0
 
-        if ((k_start + pi) < b_shape[-2] and 
-            j < out_shape[-1]):
+        if (k_start + pi) < b_shape[-2] and j < out_shape[-1]:
             b_shared[pi, pj] = b_storage[
-                batch * b_batch_stride + 
-                (k_start + pi) * b_strides[-2] + 
-                j * b_strides[-1]
+                batch * b_batch_stride
+                + (k_start + pi) * b_strides[-2]
+                + j * b_strides[-1]
             ]
         else:
             b_shared[pi, pj] = 0.0
@@ -551,4 +549,6 @@ def _tensor_matrix_multiply(
     # Write result to global memory
     if i < out_shape[-2] and j < out_shape[-1]:
         out[batch * out_strides[0] + i * out_strides[-2] + j * out_strides[-1]] = acc
+
+
 tensor_matrix_multiply = jit(_tensor_matrix_multiply)
