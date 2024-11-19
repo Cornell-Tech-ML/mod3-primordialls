@@ -4,6 +4,7 @@ import minitorch
 import time
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 
 FastTensorBackend = minitorch.TensorBackend(minitorch.FastOps)
 GPUBackend = minitorch.TensorBackend(minitorch.CudaOps)
@@ -55,3 +56,17 @@ if __name__ == "__main__":
         print(f"Size: {size}")
         for b, t in stimes.items():
             print(f"    {b}: {t:.5f}")
+
+    sizes = list(times.keys())
+    fast_times = [times[s]["fast"] for s in sizes]
+    gpu_times = [times[s]["gpu"] for s in sizes]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(sizes, fast_times, 'o-', label='Fast Backend')
+    plt.plot(sizes, gpu_times, 'o-', label='GPU Backend')
+    plt.xlabel('Matrix Size')
+    plt.ylabel('Time (seconds)')
+    plt.title('Matrix Multiplication Performance')
+    plt.legend()
+    plt.grid(True)
+    plt.show()

@@ -515,40 +515,55 @@ def _tensor_matrix_multiply(
     #    b) Copy into shared memory for b matrix
     #    c) Compute the dot produce for position c[i, j]
 
-    acc = 0.0
+    acc = 0.0  # Initialize accumulator for dot product
     # Loop over the k dimension by BLOCK_DIM chunks
-    for k_start in range(0, a_shape[-1], BLOCK_DIM):
-        # Load data into shared memory
-        if i < out_shape[-2] and (k_start + pj) < a_shape[-1]:
-            a_shared[pi, pj] = a_storage[
-                batch * a_batch_stride
-                + i * a_strides[-2]
-                + (k_start + pj) * a_strides[-1]
+    for k_start in range(
+        0, a_shape[-1], BLOCK_DIM
+    ):  # Iterate through k dimension in blocks
+        # Each thread loads data from A and B matrices
+        if (
+            i < out_shape[-2] and (k_start + pj) < a_shape[-1]
+        ):  # Check bounds for matrix A
+            a_shared[pi, pj] = a_storage[  # Load element from A into shared memory
+                batch * a_batch_stride  # Batch offset
+                + i * a_strides[-2]  # Row offset
+                + (k_start + pj) * a_strides[-1]  # Column offset
             ]
         else:
-            a_shared[pi, pj] = 0.0
+            a_shared[pi, pj] = 0.0  # Zero padding for out of bounds
 
-        if (k_start + pi) < b_shape[-2] and j < out_shape[-1]:
-            b_shared[pi, pj] = b_storage[
-                batch * b_batch_stride
-                + (k_start + pi) * b_strides[-2]
-                + j * b_strides[-1]
+        if (k_start + pi) < b_shape[-2] and j < out_shape[
+            -1
+        ]:  # Check bounds for matrix B
+            b_shared[pi, pj] = b_storage[  # Load element from B into shared memory
+                batch * b_batch_stride  # Batch offset
+                + (k_start + pi) * b_strides[-2]  # Row offset
+                + j * b_strides[-1]  # Column offset
             ]
         else:
-            b_shared[pi, pj] = 0.0
+            b_shared[pi, pj] = 0.0  # Zero padding for out of bounds
 
-        cuda.syncthreads()
+        # Synchronize to ensure all data is loaded
+        cuda.syncthreads()  # Wait for all threads to finish loading data
 
-        # Compute partial dot product
-        if i < out_shape[-2] and j < out_shape[-1]:
-            for k in range(min(BLOCK_DIM, a_shape[-1] - k_start)):
-                acc += a_shared[pi, k] * b_shared[k, pj]
+        # Compute matrix multiplication for this block
+        if i < out_shape[-2] and j < out_shape[-1]:  # Check output bounds
+            # Inner product loop
+            for k in range(
+                min(BLOCK_DIM, a_shape[-1] - k_start)
+            ):  # Compute partial dot product
+                acc += a_shared[pi, k] * b_shared[k, pj]  # Multiply and accumulate
 
-        cuda.syncthreads()
+        # Synchronize before loading next block
+        cuda.syncthreads()  # Wait for all computations before next iteration
 
-    # Write result to global memory
-    if i < out_shape[-2] and j < out_shape[-1]:
-        out[batch * out_strides[0] + i * out_strides[-2] + j * out_strides[-1]] = acc
+    # Write the final result to global memory
+    if i < out_shape[-2] and j < out_shape[-1]:  # Check output bounds
+        out[  # Store final result
+            batch * out_strides[0]  # Batch offset
+            + i * out_strides[-2]  # Row offset
+            + j * out_strides[-1]  # Column offset
+        ] = acc  # Write accumulated value to output
 
 
 tensor_matrix_multiply = jit(_tensor_matrix_multiply)
