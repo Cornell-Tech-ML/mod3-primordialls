@@ -6,31 +6,6 @@
 
 * Overview: https://minitorch.github.io/module3.html
 
-
-You will need to modify `tensor_functions.py` slightly in this assignment.
-
-* Tests:
-
-```
-python run_tests.py
-```
-
-* Note:
-
-Several of the tests for this assignment will only run if you are on a GPU machine and will not
-run on github's test infrastructure. Please follow the instructions to setup up a colab machine
-to run these tests.
-
-This assignment requires the following files from the previous assignments. You can get these by running
-
-```bash
-python sync_previous_module.py previous-module-dir current-module-dir
-```
-
-The files that will be synced are:
-
-        minitorch/tensor_data.py minitorch/tensor_functions.py minitorch/tensor_ops.py minitorch/operators.py minitorch/scalar.py minitorch/scalar_functions.py minitorch/module.py minitorch/autodiff.py minitorch/module.py project/run_manual.py project/run_scalar.py project/run_tensor.py minitorch/operators.py minitorch/module.py minitorch/autodiff.py minitorch/tensor.py minitorch/datasets.py minitorch/testing.py minitorch/optim.py
-
 ## Module 3.1 and 3.2 Stuff
 ```
 MAP
@@ -342,12 +317,14 @@ Size: 1024
 * fast: 8.69253
 * gpu: 0.88500
 
+## Module 3.5 Stuff
+I had a desktop computer with an okay GPU (GTX 1060 6GB), so I used that instead of Colab. I modified the `run_fast_tensor.py` script, but only to enable timing and to make the printed milestones be already formatted in markdown. Epochs were adapted to fit the complexity of each dataset.
 
-## CPU Split Dataset (Hidden Layer 100, LR of 0.05)
+### CPU Split Dataset (Hidden Layer 100, LR of 0.05)
 
 Average time per epoch: 0.0799858 seconds
 
-### Loss Data
+#### Loss Data
 Epoch  0  loss  8.158331075416443 correct 31\
 Epoch  10  loss  7.437599609483676 correct 31\
 Epoch  20  loss  5.266467804046692 correct 42\
@@ -368,11 +345,11 @@ Epoch  160  loss  1.109587130552987 correct 50\
 Epoch  170  loss  0.8732575599501115 correct 48\
 Epoch  180  loss  1.9998000400991935 correct 50
 
-## CPU Xor Dataset (Hidden Layer 100, LR of 0.05)
+### CPU Xor Dataset (Hidden Layer 100, LR of 0.05)
 
 Average time per epoch: 0.0780816 seconds
 
-### Loss Data
+#### Loss Data
 Epoch  0  loss  6.963324767279923 correct 20\
 Epoch  10  loss  5.45777000491824 correct 36\
 Epoch  20  loss  4.87457880563027 correct 35\
@@ -412,11 +389,11 @@ Epoch  350  loss  0.480218282644271 correct 48\
 Epoch  360  loss  0.40893864501606436 correct 46\
 Epoch  370  loss  1.2853273805142622 correct 50
 
-## CPU Simple Dataset (Hidden Layer 100, LR of 0.05)
+### CPU Simple Dataset (Hidden Layer 100, LR of 0.05)
 
 Average time per epoch: 0.0847381 seconds
 
-### Loss Data
+#### Loss Data
 Epoch  0  loss  4.386987428910761 correct 30\
 Epoch  10  loss  1.537137494703264 correct 47\
 Epoch  20  loss  1.3535009524845734 correct 49\
@@ -426,11 +403,11 @@ Epoch  50  loss  1.4331737038192442 correct 50\
 Epoch  60  loss  0.9905884659905021 correct 49\
 Epoch  70  loss  1.0522839560493344 correct 50
 
-## GPU Split Dataset (Hidden Layer 100, LR of 0.05)
+### GPU Split Dataset (Hidden Layer 100, LR of 0.05)
 
 Average time per epoch: 2.6070413 seconds
 
-### Loss Data
+#### Loss Data
 Epoch  0  loss  6.840350210119134 correct 31\
 Epoch  10  loss  3.4110235532733677 correct 38\
 Epoch  20  loss  4.408219400736454 correct 42\
@@ -449,11 +426,11 @@ Epoch  140  loss  0.7424577748469872 correct 50\
 Epoch  150  loss  2.005868650170111 correct 49\
 Epoch  160  loss  0.45455410411631575 correct 50
 
-## GPU Xor Dataset (Hidden Layer 100, LR of 0.05)
+### GPU Xor Dataset (Hidden Layer 100, LR of 0.05)
 
 Average time per epoch: 2.8542119 seconds
 
-### Loss Data
+#### Loss Data
 Epoch  0  loss  7.246203510350952 correct 32\
 Epoch  10  loss  5.288182695729239 correct 44\
 Epoch  20  loss  5.188813924795028 correct 46\
@@ -477,11 +454,11 @@ Epoch  190  loss  0.6771936792814539 correct 47\
 Epoch  200  loss  0.5224077903164924 correct 47\
 Epoch  210  loss  2.029001271108087 correct 50
 
-## GPU Simple Dataset (Hidden Layer 100, LR of 0.05)
+### GPU Simple Dataset (Hidden Layer 100, LR of 0.05)
 
 Average time per epoch: 2.6921773 seconds
 
-### Loss Data
+#### Loss Data
 Epoch  0  loss  5.547381384774088 correct 40\
 Epoch  10  loss  2.34969288663491 correct 49\
 Epoch  20  loss  1.2827078725508145 correct 50\
